@@ -41,7 +41,7 @@ if (hdf5 AND mpi)
     one_spinful_fermion.cpp
     #xas_two_band_MYFILEOLD.cpp
     xas_two_band_atomic.cpp
-    xas_two_band_corebath-expansion_MYFILE.cpp
+    xas_two_band_corebath-expansion.cpp
     #xas_two_band_corebath-expansion_MYFILEOLD.cpp
     )
 
