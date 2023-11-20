@@ -1,0 +1,31 @@
+__mu= 0.0
+__mu0=0.0
+__U0= 6.0
+__beta= 10.0
+__U=  6.0
+__mu=  0.0
+__eps=  0.0
+
+__Bx= 0.0
+__By= 0.0
+__Bz= 0.0
+__Bx0= 0.0
+__By0= 0.0
+__Bz0= 0.0
+
+__nt= 10
+__ntau= 10
+__h= 0.02
+__itermax= 2000
+__errmax= 1e-10
+__iter_rtime= 1000
+__kt= 5
+__order= 1
+__linear_mixing= 0.5
+__mixing= 0.5
+__real_time_mixing= 0.0
+__read_eq_sym= 0
+__read_rt_sym= 0
+__read_state_from_file= 0
+__nomp= 1
+__store_pp= 0
