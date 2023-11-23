@@ -85,7 +85,7 @@ void init_core_hybridization(cdvector &result, double width, double mean, double
 	result.resize(nt+1);
 	for (int time_diff = 0; time_diff <= nt; time_diff++) {
 		t = time_diff*h;
-		result[time_diff] = -II * Gamma * std::exp(-II*t*mean) * std::exp(-t*t*width*width/2);
+		result[time_diff] = -II * Gamma * ( width * sqrt(2/PI) ) * std::exp(-II*t*mean) * std::exp(-t*t*width*width/2);
 	} 
 
 }
@@ -625,7 +625,7 @@ int main(int argc, char *argv[]) {
       	// ---------------------------------------------------------------------
       	// CALCULATE XAS SIGNAL
       	
-      	// -- Calculate xas_integrand = 2* II * exp(-II * omega_in * t) * s(t) * < P_in (t) > / g 
+      	// -- Calculate xas_integrand = 2 * II * exp(-II * omega_in * t) * s(t) * < P_in (t) > / g 
       	// -- with P_in(t) , a quantity depending on omega_in (!!!)
       	
       	cdmatrix rho(4,4);
@@ -665,10 +665,10 @@ int main(int argc, char *argv[]) {
 		output_dir << output_dir_read_in << "NOSCREEN" << "_Gamma" << Gamma << "_ev" << e_v << "_ec" << e_c << "_U" << Hubbard_U << "_ntau" << ntau << "_nt" << nt << "_beta" << beta << "_h" << h << "_pulse-mean" << mean_pulse << "_pulse-sigma" << sigma_pulse << "_corebandwidth" << core_bandwidth << "_gnum" << g_num ;
 	}
 	
-	output_file_xas << "/" << "I_XAS_4.txt" ;
-	output_file_time_CBEXP << "/" << "P_in_exp_CBEXP_4.txt" ;
-	output_file_time_CBCON << "/" << "P_in_exp_CBCON_4.txt" ;
-	output_file_time_CBCON_no_corebath << "/" << "P_in_exp_CBCON_no_corebath_4.txt" ;
+	output_file_xas << "/" << "I_XAS_15.txt" ;
+	output_file_time_CBEXP << "/" << "P_in_exp_CBEXP_15.txt" ;
+	output_file_time_CBCON << "/" << "P_in_exp_CBCON_15.txt" ;
+	output_file_time_CBCON_no_corebath << "/" << "P_in_exp_CBCON_no_corebath_15.txt" ;
 		
 	std::string tmp = output_dir.str();
 	const char * output_dir_str = tmp.c_str();
@@ -711,7 +711,9 @@ int main(int argc, char *argv[]) {
 		//
 		P_in_CBCON_file.open(output_filename_CBCON);
 		P_in_CBCON_file << "############ < P_in_CBCON >_g / g ############ \n##\n";
+		
 		if (!SCREEN_HYB) { P_in_CBCON_file << "## NO SCREENING \n##\n"; }
+		
 		P_in_CBCON_file << "## Omega = " << Omega_0 << ", gammatilde = " << gammatilde << ", Gamma =" << Gamma << ", e_v = " << e_v << ", e_c = " << e_c << ", U = " << Hubbard_U << "\n";
 		P_in_CBCON_file << "## ntau = " << ntau << ", nt = " << nt << ", beta = " << beta << ", h = " << h << ", g_num = " << g_num << "\n";
 		P_in_CBCON_file << "## pulse-mean = " << mean_pulse << ", pulse-sigma = " << sigma_pulse << ", core-bandwidth = " << core_bandwidth  << "\n##\n";
@@ -724,16 +726,18 @@ int main(int argc, char *argv[]) {
 		P_in_CBCON_no_corebath_file << "## ntau = " << ntau << ", nt = " << nt << ", beta = " << beta << ", h = " << h << ", g_num = " << g_num << "\n";
 		P_in_CBCON_no_corebath_file << "## pulse-mean = " << mean_pulse << ", pulse-sigma = " << sigma_pulse << ", core-bandwidth = " << core_bandwidth  << "\n##\n";
 		P_in_CBCON_no_corebath_file << "# omega_in" << "\t" << "<P_in>/g (t=0) REAL IMAG" << "\t" << "<P_in>/g (h) REAL IMAG" << "\t" << "<P_in>/g (2*h) REAL IMAG" << "\t" << "..." ;
-		//
+		
 		
 	}
 	
 	else {
 		I_XAS_file.open(output_filename_xas, std::ios_base::app); 
+		
 		P_in_CBEXP_file.open(output_filename_CBEXP, std::ios_base::app); 
 		P_in_CBCON_file.open(output_filename_CBCON, std::ios_base::app); 
 		P_in_CBCON_no_corebath_file.open(output_filename_CBCON_no_corebath, std::ios_base::app); 
-
+		
+		
 	}
 	
 	// -- Write data to file
@@ -762,13 +766,14 @@ int main(int argc, char *argv[]) {
 	
 	
 	// ---------------------------------------------------------------------
-	// PRINT OUT / SAVING RESULTS FOR OBSERVABLES DEFINED IN HAMILTONIAN
+	/* PRINT OUT / SAVING RESULTS FOR OBSERVABLES DEFINED IN HAMILTONIAN
 	
 
-	std::string observable_file_CBEXP = "/observables_CBEXP_4.h5", observable_file_CBCON = "/observables_CBCON_4.h5";
+	std::string observable_file_CBEXP = "/observables_CBEXP_5.h5", observable_file_CBCON = "/observables_CBCON_5.h5";
 	hid_t file_id_CBEXP, file_id_CBCON;
 	hid_t group_id_CBEXP, group_id_CBCON;
-			
+	
+
 	// check whether files exist; if yes, only append/create new groups for omega_in
 	if ( ! file_exists( output_dir.str() + observable_file_CBEXP ) && ! file_exists( output_dir.str() + observable_file_CBCON) ) {
 			std::cout << "Create new hdf5 files." << std::endl;
@@ -790,6 +795,9 @@ int main(int argc, char *argv[]) {
 	
 	H5Gclose(group_id_CBEXP); H5Gclose(group_id_CBCON);
 	close_hdf5_file(file_id_CBEXP); close_hdf5_file(file_id_CBCON);
+	
+	*/
+	
 	
 	
 	return 0;
