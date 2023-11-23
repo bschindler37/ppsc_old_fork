@@ -585,10 +585,22 @@ int main(int argc, char *argv[]) {
         	     << " steps ... ABORT" << std::endl;
         	return 1;
       	}
+
+	// ---------------------------------------------------------------------
+      	// CALCULATE XAS SIGNAL
       	
-      	// -- TEST OUTPUT
-	//G_loc.print_to_file("./test_output_xas/test_G_loc.txt");
-	
+      	// -- Calculate xas_integrand = 2* II * exp(-II * omega_in * t) * s(t) * < P_in (t) > / g 
+      	// -- with P_in(t) , a quantity depending on omega_in (!!!)
+      	
+      	std::vector<cdouble> xas_integrand_CBEXP(nt+1);	// only for real time arguments
+      	      	      	
+      	for( int tstp = 0; tstp <= nt; tstp++ ) {	
+      		xas_integrand_CBEXP[tstp] = h * 2 * II * std::exp(-II * omega_in * double(tstp) * h) * ( imp_CBEXP.hamiltonian.P_in_exp[tstp+1] ) * (imp_CBEXP.hamiltonian.probe_pulse_env[tstp+1]) / g_num ;
+      	       
+      	}      	
+      	// -- Integrate xas_integrand over [0,nt*h] to find I_XAS(omega_in)
+      	integration::Integrator<double> gregory_integration(kt);
+       	cdouble I_XAS_CBEXP = gregory_integration.integrate(xas_integrand_CBEXP, nt);
 	
 	// ---------------------------------------------------------------------
       	// ADD CORE BATH TO SOLUTION (G_loc_CBCON)
@@ -615,7 +627,17 @@ int main(int argc, char *argv[]) {
 		P_in_CBEXP_file << std::endl;
 		P_in_CBEXP_file.close();
 		
-	
+
+		sprintf(filename,"xas.txt");
+		P_in_CBEXP_file.open(filename);
+	        P_in_CBEXP_file << omega_in << " " <<  I_XAS_CBEXP.real() << " " <<  I_XAS_CBEXP.imag()  << std::endl;
+		P_in_CBEXP_file.close();
+
+		
+
+
+
+		
 	return 0;
 
 }
