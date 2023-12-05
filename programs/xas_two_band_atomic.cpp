@@ -87,7 +87,7 @@ void init_core_hybridization(cdvector &result, double width, double mean, double
 	result.resize(nt+1);
 	for (int time_diff = 0; time_diff <= nt; time_diff++) {
 		t = time_diff*h;
-		result[time_diff] = -II * Gamma * std::exp(-II*t*mean) * std::exp(-t*t*width*width/2);
+		result[time_diff] = -II * Gamma * ( width * sqrt(2/PI) ) * std::exp(-II*t*mean) * std::exp(-t*t*width*width/2);
 	}
 
 }

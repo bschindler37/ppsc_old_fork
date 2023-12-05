@@ -334,16 +334,19 @@ int main(int argc, char *argv[]) {
 	imp_CBCON.update_hamiltonian();
 	
 	// -- Setup core bath
-	GREEN Hyb_cc(nt, ntau, 1, FERMION), Hyb_cc_cc(nt, ntau, 1, FERMION);	// initialized as zero
+	GREEN Hyb_core(nt, ntau, 1, FERMION), Hyb_core_cc(nt, ntau, 1, FERMION);	// initialized as zero
 	cdvector core_hybridization;
 	init_core_hybridization(core_hybridization, core_bandwidth, e_c, Gamma, h, nt);
+	
 	for (int tstp1 = 0; tstp1 <= nt; tstp1++){
 		for (int tstp2 = tstp1; tstp2 <= nt; tstp2++) {
-			Hyb_cc.set_ret( tstp2 , tstp1 , core_hybridization[tstp2-tstp1] ); 	// set only _retarded_ component non-zero
+			Hyb_core.set_ret( tstp2 , tstp1 , core_hybridization[tstp2-tstp1] ); 	// set _retarded_ component non-zero
+			Hyb_core.set_les( tstp1 , tstp2 , core_hybridization[tstp2-tstp1] );	// set _lesser_ component non-zero
 		}
 	}
-	for ( int tstp = -1; tstp <= nt; tstp++ ) {
-		ppsc::set_bwd_from_fwd(tstp, Hyb_cc_cc, Hyb_cc); 
+	
+	for ( int tstp = -1; tstp <= nt; tstp++ ) {	// set hermitian conjugate Hyb_core_cc
+		ppsc::set_bwd_from_fwd(tstp, Hyb_core_cc, Hyb_core); 
 	}
 	
 	//***** TEST OUTPUT *****/
@@ -372,7 +375,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	
-	// -- Solve atomic problem (here, Hyb_cc = Hyb_cc_cc = 0)
+	// -- Solve atomic problem (here, Hyb_core = Hyb_core_cc = 0)
 	imp_CBEXP.solve_atomic(); imp_CBCON.solve_atomic();
 	imp_CBEXP.update_density_matrix(-1); imp_CBCON.update_density_matrix(-1);	// this routine is called when performing 'pp_step' function as well
 	imp_CBEXP.hamiltonian.update_exp_vals(-1, imp_CBEXP.rho); imp_CBCON.hamiltonian.update_exp_vals(-1, imp_CBCON.rho);	// this routine is called when performing 'pp_step' function as well
@@ -381,11 +384,11 @@ int main(int argc, char *argv[]) {
 	ppsc::pp_ints_type pp_ints_CBEXP, pp_ints_CBCON;
 	ppsc::gf_verts_type gf_verts;	// is the same for core-bath-hybridization-expansion & core-bath-convolution at the end
 	if (SCREEN_HYB) {
-		pp_ints_CBEXP = get_pp_ints(Delta, Delta_cc, Hyb_cc, Hyb_cc_cc, imp_CBEXP.hamiltonian.hil_);
+		pp_ints_CBEXP = get_pp_ints(Delta, Delta_cc, Hyb_core, Hyb_core_cc, imp_CBEXP.hamiltonian.hil_);
 	}
 	else {
 		//std::cout << "I am here - no screening!" << std::endl;
-		pp_ints_CBEXP = get_pp_ints(Hyb_cc, Hyb_cc_cc, imp_CBEXP.hamiltonian.hil_);
+		pp_ints_CBEXP = get_pp_ints(Hyb_core, Hyb_core_cc, imp_CBEXP.hamiltonian.hil_);
 	}
 	pp_ints_CBCON = get_pp_ints_CBCON(Delta, Delta_cc, imp_CBCON.hamiltonian.hil_);
 	
@@ -594,12 +597,12 @@ int main(int argc, char *argv[]) {
       	
       	// -- Set up integration kernel F = - G_loc_CBCON * Hyb_cc_4 (F_cc = - Hyb_cc_4 * G_loc_CBCON) ; Q is equal to G_loc_CBCON
       	GREEN F(nt, ntau, 4, BOSON), F_cc(nt, ntau, 4, BOSON);
-      	GREEN Hyb_cc_4(nt, ntau, 4, FERMION);
-	Hyb_cc_4.set_matrixelement(3, 3, Hyb_cc);	// core bath hybridization is spin symmetric
-	Hyb_cc_4.set_matrixelement(2, 2, Hyb_cc);	// core bath hybridization is spin symmetric
+      	GREEN Hyb_core_4(nt, ntau, 4, FERMION);
+	Hyb_core_4.set_matrixelement(3, 3, Hyb_core);	// core bath hybridization is spin symmetric
+	Hyb_core_4.set_matrixelement(2, 2, Hyb_core);	// core bath hybridization is spin symmetric
 	
-      	cntr::convolution(F, G_loc_CBCON, G_loc_CBCON, Hyb_cc_4, Hyb_cc_4, beta, h, kt);
-      	cntr::convolution(F_cc, Hyb_cc_4, Hyb_cc_4, G_loc_CBCON, G_loc_CBCON, beta, h, kt);
+      	cntr::convolution(F, G_loc_CBCON, G_loc_CBCON, Hyb_core_4, Hyb_core_4, beta, h, kt);
+      	cntr::convolution(F_cc, Hyb_core_4, Hyb_core_4, G_loc_CBCON, G_loc_CBCON, beta, h, kt);
       	for (int tstp = -1; tstp <= nt; tstp++ ) {
       		F.smul(tstp, -1.0);
       		F_cc.smul(tstp, -1.0);
@@ -665,10 +668,10 @@ int main(int argc, char *argv[]) {
 		output_dir << output_dir_read_in << "NOSCREEN" << "_Gamma" << Gamma << "_ev" << e_v << "_ec" << e_c << "_U" << Hubbard_U << "_ntau" << ntau << "_nt" << nt << "_beta" << beta << "_h" << h << "_pulse-mean" << mean_pulse << "_pulse-sigma" << sigma_pulse << "_corebandwidth" << core_bandwidth << "_gnum" << g_num ;
 	}
 	
-	output_file_xas << "/" << "I_XAS_15.txt" ;
-	output_file_time_CBEXP << "/" << "P_in_exp_CBEXP_15.txt" ;
-	output_file_time_CBCON << "/" << "P_in_exp_CBCON_15.txt" ;
-	output_file_time_CBCON_no_corebath << "/" << "P_in_exp_CBCON_no_corebath_15.txt" ;
+	output_file_xas << "/" << "I_XAS_34.txt" ;
+	output_file_time_CBEXP << "/" << "P_in_exp_CBEXP_34.txt" ;
+	output_file_time_CBCON << "/" << "P_in_exp_CBCON_34.txt" ;
+	output_file_time_CBCON_no_corebath << "/" << "P_in_exp_CBCON_no_corebath_34.txt" ;
 		
 	std::string tmp = output_dir.str();
 	const char * output_dir_str = tmp.c_str();
