@@ -36,7 +36,7 @@
 
 #include "./ppsc/hilbert_spaces/two_band_fermi_diag.hpp"	// Hilbert space for spin-conserving dynamics, 2 orbitals, spin up & down
 
-#include "./ppsc/hamiltonians/two_band_hubbard_xas.hpp"
+#include "./ppsc/hamiltonians/two_band_hubbard_xas2.hpp"
 
 // -----------------------------------------------------------------------
 // -----------------------------------------------------------------------
@@ -318,7 +318,7 @@ int main(int argc, char *argv[]) {
 	// SETUP pp calculator
 	
 	typedef ppsc::hilbert_spaces::two_band_fermi_diag hilbert_space_type;
-	typedef ppsc::hamiltonians::two_band_hubbard_xas<hilbert_space_type> hamiltonian_type;
+	typedef ppsc::hamiltonians::two_band_hubbard_xas2<hilbert_space_type> hamiltonian_type;
 	typedef ppsc::solver<hamiltonian_type> solver_type;
 
 	hilbert_space_type hilbert_space;
@@ -341,7 +341,7 @@ int main(int argc, char *argv[]) {
 	for (int tstp1 = 0; tstp1 <= nt; tstp1++){
 		for (int tstp2 = tstp1; tstp2 <= nt; tstp2++) {
 			Hyb_core.set_ret( tstp2 , tstp1 , core_hybridization[tstp2-tstp1] ); 	// set _retarded_ component non-zero
-			Hyb_core.set_les( tstp1 , tstp2 , std::conj(core_hybridization[tstp2-tstp1]) );	// set _lesser_ component non-zero
+			Hyb_core.set_les( tstp1 , tstp2 , core_hybridization[tstp2-tstp1] );	// set _lesser_ component non-zero
 		}
 	}
 	
@@ -587,7 +587,7 @@ int main(int argc, char *argv[]) {
       	}
       	
       	// -- TEST OUTPUT
-	G_loc_CBEXP.print_to_file("./xas_data/test_G_core.txt");
+	//G_loc.print_to_file("./test_output_xas/test_G_loc.txt");
 	
 	
 	// ---------------------------------------------------------------------
@@ -633,6 +633,7 @@ int main(int argc, char *argv[]) {
       	
       	cdmatrix rho(4,4);
       	std::vector<cdouble> xas_integrand_CBEXP(nt+1);	// only for real time arguments
+      	std::vector<cdouble> xas_integrand_CBEXP_alt(nt+1);	// only for real time arguments
       	std::vector<cdouble> xas_integrand_CBCON_no_corebath(nt+1);	// only for real time arguments
       	std::vector<cdouble> xas_integrand_CBCON(nt+1);	// only for real time arguments
       	std::vector<cdouble> P_in_CBCON(nt+1);	// only for real time arguments
@@ -642,13 +643,17 @@ int main(int argc, char *argv[]) {
       	      	G_loc_CBCON.density_matrix(tstp, rho);
       	      	P_in_CBCON[tstp] = rho(2,0) + rho(3,1);
       	      	
-      		xas_integrand_CBEXP[tstp] = h * 2 * II * std::exp(-II * omega_in * double(tstp) * h) * ( imp_CBEXP.hamiltonian.P_in_exp[tstp+1] ) * (imp_CBEXP.hamiltonian.probe_pulse_env[tstp+1]) / g_num ;
-      		xas_integrand_CBCON[tstp] = h * 2 * II * std::exp(-II * omega_in * double(tstp) * h) * ( P_in_CBCON[tstp] ) * (imp_CBCON.hamiltonian.probe_pulse_env[tstp+1]) / g_num ;
- 		xas_integrand_CBCON_no_corebath[tstp] =  h * 2 * II * std::exp(-II * omega_in * double(tstp) * h) * ( imp_CBCON.hamiltonian.P_in_exp[tstp+1]  ) * (imp_CBCON.hamiltonian.probe_pulse_env[tstp+1]) / g_num;
+      	      	xas_integrand_CBEXP_alt[tstp] = - h * 2 * std::exp(+II*omega_in*double(tstp)*h) * imp_CBEXP.hamiltonian.P_out_exp[tstp+1] * imp_CBEXP.hamiltonian.probe_pulse_env[tstp+1] / g_num ;
+      	      	
+      		xas_integrand_CBEXP[tstp] = h * 2 * std::exp(-II * omega_in * double(tstp) * h) * ( imp_CBEXP.hamiltonian.P_in_exp[tstp+1] ) * (imp_CBEXP.hamiltonian.probe_pulse_env[tstp+1]) / g_num ;
+      		xas_integrand_CBCON[tstp] = h * 2 * std::exp(-II * omega_in * double(tstp) * h) * ( P_in_CBCON[tstp] ) * (imp_CBCON.hamiltonian.probe_pulse_env[tstp+1]) / g_num ;
+ 		xas_integrand_CBCON_no_corebath[tstp] =  h * 2 * std::exp(-II * omega_in * double(tstp) * h) * ( imp_CBCON.hamiltonian.P_in_exp[tstp+1]  ) * (imp_CBCON.hamiltonian.probe_pulse_env[tstp+1]) / g_num;
       	}
       	
       	// -- Integrate xas_integrand over [0,nt*h] to find I_XAS(omega_in)
       	integration::Integrator<double> gregory_integration(kt);
+      	
+      	cdouble I_XAS_CBEXP_alt = gregory_integration.integrate(xas_integrand_CBEXP_alt, nt);
       	
       	cdouble I_XAS_CBEXP = gregory_integration.integrate(xas_integrand_CBEXP, nt);
        	cdouble I_XAS_CBCON = gregory_integration.integrate(xas_integrand_CBCON, nt);
@@ -656,7 +661,6 @@ int main(int argc, char *argv[]) {
 
 	// ---------------------------------------------------------------------
 	// PRINT OUT / SAVING RESULTS FOR I_XAS(omega_in)  &  < P_in >_{g_num} / g_num 
-	
 	
 	std::ofstream I_XAS_file, P_in_CBEXP_file, P_in_CBCON_file, P_in_CBCON_no_corebath_file;
 	
@@ -669,10 +673,10 @@ int main(int argc, char *argv[]) {
 		output_dir << output_dir_read_in << "NOSCREEN" << "_Gamma" << Gamma << "_ev" << e_v << "_ec" << e_c << "_U" << Hubbard_U << "_ntau" << ntau << "_nt" << nt << "_beta" << beta << "_h" << h << "_pulse-mean" << mean_pulse << "_pulse-sigma" << sigma_pulse << "_corebandwidth" << core_bandwidth << "_gnum" << g_num ;
 	}
 	
-	output_file_xas << "/" << "I_XAS_45.txt" ;
-	output_file_time_CBEXP << "/" << "P_in_exp_CBEXP_45.txt" ;
-	output_file_time_CBCON << "/" << "P_in_exp_CBCON_45.txt" ;
-	output_file_time_CBCON_no_corebath << "/" << "P_in_exp_CBCON_no_corebath_45.txt" ;
+	output_file_xas << "/" << "I_XAS_43.txt" ;
+	output_file_time_CBEXP << "/" << "P_in_exp_CBEXP_43.txt" ;
+	output_file_time_CBCON << "/" << "P_in_exp_CBCON_43.txt" ;
+	output_file_time_CBCON_no_corebath << "/" << "P_in_exp_CBCON_no_corebath_43.txt" ;
 		
 	std::string tmp = output_dir.str();
 	const char * output_dir_str = tmp.c_str();
@@ -701,7 +705,7 @@ int main(int argc, char *argv[]) {
 		I_XAS_file << "## Omega = " << Omega_0 << ", gammatilde = " << gammatilde << ", Gamma =" << Gamma << ", e_v = " << e_v << ", e_c = " << e_c << ", U = " << Hubbard_U << "\n";
 		I_XAS_file << "## ntau = " << ntau << ", nt = " << nt << ", beta = " << beta << ", h = " << h << ", g_num = " << g_num << "\n";
 		I_XAS_file << "## pulse-mean = " << mean_pulse << ", pulse-sigma = " << sigma_pulse << ", core-bandwidth = " << core_bandwidth  << "\n##\n";
-		I_XAS_file << "# omega_in" << "\t" << "I_XAS_CBEXP" << "\t" << "I_XAS_CBCON" << "\t" << "I_XAS_CBCON_no_corebath" ;
+		I_XAS_file << "# omega_in" << "\t" << "I_XAS_CBEXP" << "\t" << "I_XAS_CBCON" << "\t" << "I_XAS_CBCON_no_corebath" << "\t" << "I_XAS_CBEXP_alt";
 		
 		// -- P_in (t)
 		//
@@ -748,7 +752,7 @@ int main(int argc, char *argv[]) {
 	if ( I_XAS_file.is_open() && P_in_CBEXP_file.is_open() && P_in_CBCON_file.is_open() && P_in_CBCON_no_corebath_file.is_open() ) {
 		
 		// -- XAS signal
-		I_XAS_file << "\n" << omega_in << "\t" << I_XAS_CBEXP.imag() << "\t" << I_XAS_CBCON.imag() <<  "\t" << I_XAS_CBCON_no_corebath.imag();
+		I_XAS_file << "\n" << omega_in << "\t" << I_XAS_CBEXP.imag() << "\t" << I_XAS_CBCON.imag() <<  "\t" << I_XAS_CBCON_no_corebath.imag() << "\t" << I_XAS_CBEXP_alt.imag();
 		I_XAS_file.close();
 		
 		// -- P_in (t)

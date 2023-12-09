@@ -1,6 +1,6 @@
 
-#ifndef _PPSC_HAMILTONIANS_TWO_BAND_HUBBARD_XAS_HPP
-#define _PPSC_HAMILTONIANS_TWO_BAND_HUBBARD_XAS_HPP
+#ifndef _PPSC_HAMILTONIANS_TWO_BAND_HUBBARD_XAS2_HPP
+#define _PPSC_HAMILTONIANS_TWO_BAND_HUBBARD_XAS2_HPP
 
 // -----------------------------------------------------------------------
 //
@@ -23,12 +23,12 @@ namespace hamiltonians {
 // -----------------------------------------------------------------------
 
 // -----------------------------------------------------------------------
-template<class HILB> class two_band_hubbard_xas {
+template<class HILB> class two_band_hubbard_xas2 {
 
 public:
 
   // ---------------------------------------------------------------------
-  two_band_hubbard_xas(int nt, HILB & hilbert_space) :
+  two_band_hubbard_xas2(int nt, HILB & hilbert_space) :
     nt(nt),
     Q_exp(nt+2), Eint_exp(nt+2), time(nt+2),
     n1_exp(nt+2), n2_exp(nt+2), P_in_exp(nt+2), P_in_up_exp(nt+2), P_in_down_exp(nt+2), P_out_exp(nt+2),
@@ -81,7 +81,7 @@ public:
     Htemp = Htemp
     		+ e_c_temp * n2 + e_valence * n1	// core & valence energy level
     	 	+ U * dens_updown_1	// valence Hubbard U interaction
-    	 	+ g * II * ( P_in * probe_env_exp - P_out * std::conj(probe_env_exp) ) ;   // light-induced electron-hole excitation, for tstp >= 0
+    	 	+ g * ( P_in * probe_env_exp + P_out * std::conj(probe_env_exp) ) ;   // light-induced electron-hole excitation, for tstp >= 0
     
      // - mu * n ???
 
@@ -208,7 +208,7 @@ public:
 } // end namespace ppsc
 // -----------------------------------------------------------------------
 
-#endif // _PPSC_HAMILTONIANS_TWO_BAND_HUBBARD_XAS_HPP
+#endif // _PPSC_HAMILTONIANS_TWO_BAND_HUBBARD_XAS2_HPP
 
 
 

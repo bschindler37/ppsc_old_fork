@@ -42,6 +42,7 @@ if (hdf5 AND mpi)
     #xas_two_band_MYFILEOLD.cpp
     xas_two_band_atomic.cpp
     xas_two_band_corebath-expansion.cpp
+    xas_two_band_corebath-expansion2.cpp
     #xas_two_band_corebath-expansion_MYFILEOLD.cpp
     )
 
