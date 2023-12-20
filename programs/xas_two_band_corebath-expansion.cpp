@@ -276,7 +276,7 @@ int main(int argc, char *argv[]) {
 	std::cout << "omega_in = " << omega_in << std::endl; //  << omega_in << " , sigma_pulse = " << sigma_pulse << " , mean_pulse = " << mean_pulse << std::endl;
 	
 	// OUTPUT DIRECTORY
-	std::string output_dir_read_in = "./xas_data/";
+	std::string output_dir_read_in = "./data/";
 	
 	// ---------------------------------------------------------------
 	// MEMORY REQUIREMENTS
@@ -670,7 +670,7 @@ int main(int argc, char *argv[]) {
 	// -- create directories
 	std::ostringstream output_dir, output_file_xas, output_file_time_CBEXP, output_file_time_CBCON, output_file_time_CBCON_no_corebath;
 	#if SCREEN_HYB
-		output_dir << output_dir_read_in << "Omega" << Omega_0 << "_gammatilde" << gammatilde << "_Gamma" << Gamma << "_ev" << e_v << "_ec" << e_c << "_U" << Hubbard_U << "_ntau" << ntau << "_nt" << nt << "_beta" << beta << "_h" << h << "_pulse-mean" << mean_pulse << "_pulse-sigma" << sigma_pulse << "_corebandwidth" << core_bandwidth << "_gnum" << g_num; 
+		output_dir << output_dir_read_in << "Omega" << Omega_0 << "_gamma" << gamma << "_Gamma" << Gamma << "_ev" << e_v << "_ec" << e_c << "_U" << Hubbard_U << "_ntau" << ntau << "_nt" << nt << "_beta" << beta << "_h" << h << "_pulse-mean" << mean_pulse << "_pulse-sigma" << sigma_pulse << "_corebandwidth" << core_bandwidth << "_gnum" << g_num; 
 	#else
 		output_dir << output_dir_read_in << "NOSCREEN" << "_Gamma" << Gamma << "_ev" << e_v << "_ec" << e_c << "_U" << Hubbard_U << "_ntau" << ntau << "_nt" << nt << "_beta" << beta << "_h" << h << "_pulse-mean" << mean_pulse << "_pulse-sigma" << sigma_pulse << "_corebandwidth" << core_bandwidth << "_gnum" << g_num ;
 	#endif 
@@ -704,7 +704,7 @@ int main(int argc, char *argv[]) {
 		I_XAS_file.open(output_filename_xas);
 		I_XAS_file << "############ XAS signal ############ \n##\n";
 		if (!SCREEN_HYB) { I_XAS_file << "## NO SCREENING \n##\n"; }
-		I_XAS_file << "## Omega = " << Omega_0 << ", gammatilde = " << gammatilde << ", Gamma =" << Gamma << ", e_v = " << e_v << ", e_c = " << e_c << ", U = " << Hubbard_U << "\n";
+		I_XAS_file << "## Omega = " << Omega_0 << ", gamma = " << gamma << ", Gamma =" << Gamma << ", e_v = " << e_v << ", e_c = " << e_c << ", U = " << Hubbard_U << "\n";
 		I_XAS_file << "## ntau = " << ntau << ", nt = " << nt << ", beta = " << beta << ", h = " << h << ", g_num = " << g_num << "\n";
 		I_XAS_file << "## pulse-mean = " << mean_pulse << ", pulse-sigma = " << sigma_pulse << ", core-bandwidth = " << core_bandwidth  << "\n##\n";
 		I_XAS_file << "# omega_in" << "\t" << "I_XAS_CBEXP" << "\t" << "I_XAS_CBCON" << "\t" << "I_XAS_CBCON_no_corebath" ;
@@ -714,7 +714,7 @@ int main(int argc, char *argv[]) {
 		P_in_CBEXP_file.open(output_filename_CBEXP);
 		P_in_CBEXP_file << "############ < P_in_CBEXP >_g / g ############ \n##\n";
 		if (!SCREEN_HYB) { P_in_CBEXP_file << "## NO SCREENING \n##\n"; }
-		P_in_CBEXP_file << "## Omega = " << Omega_0 << ", gammatilde = " << gammatilde << ", Gamma =" << Gamma << ", e_v = " << e_v << ", e_c = " << e_c << ", U = " << Hubbard_U << "\n";
+		P_in_CBEXP_file << "## Omega = " << Omega_0 << ", gamma = " << gamma << ", Gamma =" << Gamma << ", e_v = " << e_v << ", e_c = " << e_c << ", U = " << Hubbard_U << "\n";
 		P_in_CBEXP_file << "## ntau = " << ntau << ", nt = " << nt << ", beta = " << beta << ", h = " << h << ", g_num = " << g_num << "\n";
 		P_in_CBEXP_file << "## pulse-mean = " << mean_pulse << ", pulse-sigma = " << sigma_pulse << ", core-bandwidth = " << core_bandwidth  << "\n##\n";
 		P_in_CBEXP_file << "# omega_in" << "\t" << "<P_in>/g (t=0) REAL IMAG" << "\t" << "<P_in>/g (h) REAL IMAG" << "\t" << "<P_in>/g (2*h) REAL IMAG" << "\t" << "..." ;
@@ -724,7 +724,7 @@ int main(int argc, char *argv[]) {
 		
 		if (!SCREEN_HYB) { P_in_CBCON_file << "## NO SCREENING \n##\n"; }
 		
-		P_in_CBCON_file << "## Omega = " << Omega_0 << ", gammatilde = " << gammatilde << ", Gamma =" << Gamma << ", e_v = " << e_v << ", e_c = " << e_c << ", U = " << Hubbard_U << "\n";
+		P_in_CBCON_file << "## Omega = " << Omega_0 << ", gamma = " << gamma << ", Gamma =" << Gamma << ", e_v = " << e_v << ", e_c = " << e_c << ", U = " << Hubbard_U << "\n";
 		P_in_CBCON_file << "## ntau = " << ntau << ", nt = " << nt << ", beta = " << beta << ", h = " << h << ", g_num = " << g_num << "\n";
 		P_in_CBCON_file << "## pulse-mean = " << mean_pulse << ", pulse-sigma = " << sigma_pulse << ", core-bandwidth = " << core_bandwidth  << "\n##\n";
 		P_in_CBCON_file << "# omega_in" << "\t" << "<P_in>/g (t=0) REAL IMAG" << "\t" << "<P_in>/g (h) REAL IMAG" << "\t" << "<P_in>/g (2*h) REAL IMAG" << "\t" << "..." ;
@@ -732,7 +732,7 @@ int main(int argc, char *argv[]) {
 		P_in_CBCON_no_corebath_file.open(output_filename_CBCON_no_corebath);
 		P_in_CBCON_no_corebath_file << "############ < P_in_CBCON_no_corebath >_g / g ############ \n##\n";
 		if (!SCREEN_HYB) { P_in_CBCON_no_corebath_file << "## NO SCREENING \n##\n"; }
-		P_in_CBCON_no_corebath_file << "## Omega = " << Omega_0 << ", gammatilde = " << gammatilde << ", Gamma =" << Gamma << ", e_v = " << e_v << ", e_c = " << e_c << ", U = " << Hubbard_U << "\n";
+		P_in_CBCON_no_corebath_file << "## Omega = " << Omega_0 << ", gamma = " << gamma << ", Gamma =" << Gamma << ", e_v = " << e_v << ", e_c = " << e_c << ", U = " << Hubbard_U << "\n";
 		P_in_CBCON_no_corebath_file << "## ntau = " << ntau << ", nt = " << nt << ", beta = " << beta << ", h = " << h << ", g_num = " << g_num << "\n";
 		P_in_CBCON_no_corebath_file << "## pulse-mean = " << mean_pulse << ", pulse-sigma = " << sigma_pulse << ", core-bandwidth = " << core_bandwidth  << "\n##\n";
 		P_in_CBCON_no_corebath_file << "# omega_in" << "\t" << "<P_in>/g (t=0) REAL IMAG" << "\t" << "<P_in>/g (h) REAL IMAG" << "\t" << "<P_in>/g (2*h) REAL IMAG" << "\t" << "..." ;
