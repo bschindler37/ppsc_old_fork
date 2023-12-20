@@ -23,7 +23,7 @@
 #define NCA_SOLVER_ASSERT_0 0
 #define NCA_SOLVER_ASSERT_1 0
 
-#define SCREEN_HYB 0
+#define SCREEN_HYB 1
 #define DEBUG 0
 
 #include <cntr/cntr.hpp>
@@ -256,7 +256,7 @@ int main(int argc, char *argv[]) {
 	double e_c; 		// energy core level in ROTATING WAVE APPROXIMATION (!)
 	double e_v; 		// energy valence level
 	double Omega_0;		// bosonic frequency (screening mode)
-	double gammatilde;		// screening mode interaction with local valence electron density
+	double gammatilde, gamma;		// screening mode interaction with local valence electron density
 	double Hubbard_U; 	// Hubbard interaction of valence orbital
 	
 	double core_bandwidth;	// core bath bandwidth energy \in [-core_bandwidth + e_c, + corebandwidth + e_c]
@@ -305,7 +305,7 @@ int main(int argc, char *argv[]) {
 	find_param(argv[2], "__e_c=", e_c);
 	find_param(argv[2], "__e_v=", e_v);
 	find_param(argv[2], "__Omega_0=", Omega_0);
-	find_param(argv[2], "__gammatilde=", gammatilde);
+	find_param(argv[2], "__gamma=", gamma);
 	find_param(argv[2], "__mean_pulse=", mean_pulse);
 	find_param(argv[2], "__sigma_pulse=", sigma_pulse);
 	find_param(argv[2], "__g_num=", g_num);
@@ -313,7 +313,8 @@ int main(int argc, char *argv[]) {
 	find_param(argv[2], "__core_bandwidth=", core_bandwidth);
 	find_param(argv[2], "__Gamma=", Gamma);
 
-
+	gammatilde = gamma*std::sqrt(2*Omega_0);
+	
 	// ---------------------------------------------------------------
 	// SETUP pp calculator
 	
@@ -362,7 +363,7 @@ int main(int argc, char *argv[]) {
 	// ---------------------------------------------------------------------
 	// INITIALIZATION
 	
-	if (SCREEN_HYB) {
+	#if SCREEN_HYB
 		for(int tstp = -1; tstp <= nt; tstp++) {
 			cntr::green_single_pole_XX_timestep(tstp, Delta, Omega_0, beta, h);	// calculate free bosonic propagator [-i < X(t) X(t') >] for one timestep
 			Delta.smul(tstp, (gammatilde*gammatilde) / (2.0*Omega_0) ); // see my handwritten calculation on induced interaction by Holstein interaction U(t,t') = + (gamma^2 / 2) * D_free (t,t'), where D_free (t,t') = -i <X(t) X(t')> for real times and D_free(-i tau,-i tau') = - <X(-i tau) X(-i tau')> for imaginary times.
@@ -372,7 +373,7 @@ int main(int argc, char *argv[]) {
 			Delta_cc.set_timestep(tstp,Delta); // (*)
 			// ppsc::set_bwd_from_fwd(tstp, Delta_cc, Delta); // (*)
 		}
-	}
+	#endif	// SCREEN_HYB
 
 	
 	// -- Solve atomic problem (here, Hyb_core = Hyb_core_cc = 0)
@@ -437,7 +438,9 @@ int main(int argc, char *argv[]) {
 		
 		// -- Calculate change with last solution
 		itererr_CBEXP = cntr::distance_norm2(-1, G_loc_CBEXP, G_loc_CBEXP_temp); itererr_CBCON = cntr::distance_norm2(-1, G_loc_CBCON, G_loc_CBCON_temp);
-		if (DEBUG) { std::cout << "Matsubara-iter:  " << iter << " err_CBEXP: " << itererr_CBEXP << " err_CBCON: " << itererr_CBCON << std::endl; }		
+		#if DEBUG
+			std::cout << "Matsubara-iter:  " << iter << " err_CBEXP: " << itererr_CBEXP << " err_CBCON: " << itererr_CBCON << std::endl;
+		#endif
 		
 		// -- Update G_temp's
 		G_loc_CBEXP_temp.set_timestep(-1, G_loc_CBEXP); G_loc_CBCON_temp.set_timestep(-1, G_loc_CBCON);
@@ -498,7 +501,9 @@ int main(int argc, char *argv[]) {
 			
 			// -- Calculate change with last solution for time t = kt only !!!!
 			itererr_CBEXP = cntr::distance_norm2(kt, G_loc_CBEXP, G_loc_CBEXP_temp); itererr_CBCON = cntr::distance_norm2(kt, G_loc_CBCON, G_loc_CBCON_temp);
-			if (DEBUG) { std::cout << "Bootstrapping-iter:  " << iter << " err_CBEXP: " << itererr_CBEXP << " err_CBCON: " << itererr_CBCON << std::endl; }
+			#if DEBUG 
+				std::cout << "Bootstrapping-iter:  " << iter << " err_CBEXP: " << itererr_CBEXP << " err_CBCON: " << itererr_CBCON << std::endl;
+			#endif
 			
 			// -- Update G_temp's
 			// (here, in the bootrstrapping phase, we only need kt timeslice of G_temp's
@@ -561,7 +566,9 @@ int main(int argc, char *argv[]) {
 				
 				// -- Calculate change with last solution
 				itererr_CBEXP = cntr::distance_norm2(tstp, G_loc_CBEXP, G_loc_CBEXP_temp); itererr_CBCON = cntr::distance_norm2(tstp, G_loc_CBCON, G_loc_CBCON_temp);
-				if (DEBUG) { std::cout << "Time-stepping-iter:  " << iter << " err_CBEXP: " << itererr_CBEXP << " err_CBCON: " << itererr_CBCON << std::endl; }
+				#if DEBUG
+					std::cout << "Time-stepping-iter:  " << iter << " err_CBEXP: " << itererr_CBEXP << " err_CBCON: " << itererr_CBCON << std::endl;
+				#endif
 		
 				// -- Update G_temp's
 				G_loc_CBEXP_temp.set_timestep(tstp, G_loc_CBEXP); G_loc_CBCON_temp.set_timestep(tstp, G_loc_CBCON);
@@ -662,17 +669,16 @@ int main(int argc, char *argv[]) {
 	
 	// -- create directories
 	std::ostringstream output_dir, output_file_xas, output_file_time_CBEXP, output_file_time_CBCON, output_file_time_CBCON_no_corebath;
-	if (SCREEN_HYB) {
+	#if SCREEN_HYB
 		output_dir << output_dir_read_in << "Omega" << Omega_0 << "_gammatilde" << gammatilde << "_Gamma" << Gamma << "_ev" << e_v << "_ec" << e_c << "_U" << Hubbard_U << "_ntau" << ntau << "_nt" << nt << "_beta" << beta << "_h" << h << "_pulse-mean" << mean_pulse << "_pulse-sigma" << sigma_pulse << "_corebandwidth" << core_bandwidth << "_gnum" << g_num; 
-	}
-	else {
+	#else
 		output_dir << output_dir_read_in << "NOSCREEN" << "_Gamma" << Gamma << "_ev" << e_v << "_ec" << e_c << "_U" << Hubbard_U << "_ntau" << ntau << "_nt" << nt << "_beta" << beta << "_h" << h << "_pulse-mean" << mean_pulse << "_pulse-sigma" << sigma_pulse << "_corebandwidth" << core_bandwidth << "_gnum" << g_num ;
-	}
+	#endif 
 	
-	output_file_xas << "/" << "I_XAS_45.txt" ;
-	output_file_time_CBEXP << "/" << "P_in_exp_CBEXP_45.txt" ;
-	output_file_time_CBCON << "/" << "P_in_exp_CBCON_45.txt" ;
-	output_file_time_CBCON_no_corebath << "/" << "P_in_exp_CBCON_no_corebath_45.txt" ;
+	output_file_xas << "/" << "I_XAS.txt" ;
+	output_file_time_CBEXP << "/" << "P_in_exp_CBEXP.txt" ;
+	output_file_time_CBCON << "/" << "P_in_exp_CBCON.txt" ;
+	output_file_time_CBCON_no_corebath << "/" << "P_in_exp_CBCON_no_corebath.txt" ;
 		
 	std::string tmp = output_dir.str();
 	const char * output_dir_str = tmp.c_str();
