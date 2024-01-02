@@ -364,17 +364,18 @@ int main(int argc, char *argv[]) {
 	// INITIALIZATION
 	
 	#if SCREEN_HYB
-		cntr::green_single_pole_XX_timestep(Delta, Omega_0, beta, h);	// calculate free bosonic propagator [-i < X(t) X(t') >] for one timestep
-				
+						
 		for(int tstp = -1; tstp <= nt; tstp++) {
+		
+			cntr::green_single_pole_XX_timestep(tstp, Delta, Omega_0, beta, h);	// calculate free bosonic propagator [-i < X(t) X(t') >] for one timestep
 
-			//Delta.smul(tstp, (gammatilde*gammatilde) / (2.0*Omega_0) );
+			Delta.smul(tstp, (gammatilde*gammatilde) / (2.0*Omega_0) );
 				// see my handwritten calculation on induced interaction by Holstein interaction U(t,t') = + (gamma^2 / 2) * D_free (t,t'),
 				//	where D_free (t,t') = -i <X(t) X(t')> for real times and D_free(-i tau,-i tau') = - <X(-i tau) X(-i tau')> for imaginary times.
 				// 	(1 / Omega_0) factor comes from def. of X = ( a + a^dag ) / sqrt(2) in NESSi
 				//	[ vs. X = ( a + a^dag ) / sqrt(2*Omega_0) for physical displacement X ]
 				
-			Delta.smul(tstp, gamma*gamma); // alternative to line above as redefinition of gamma --> gammatilde is cancelled by 1/(2*Omega_0)
+			//Delta.smul(tstp, gamma*gamma); // alternative to line above as redefinition of gamma --> gammatilde is cancelled by 1/(2*Omega_0)
 			
 			// -- Use one of the two lines below (*) ; Delta is hermitian 
 			Delta_cc.set_timestep(tstp,Delta); // (*)
