@@ -213,7 +213,7 @@ int main(int argc, char *argv[]) {
     // -- output directory
     
     std::ostringstream output_dir;	// output directory
-    output_dir << "Omega" << Omega0 << "_gamma" << gamma << "_eps" << imp.hamiltonian.eps << "_mu" << imp.hamiltonian.mu << "_ntau" << ntau << "_nt" << nt << "_beta" << beta << "_h" << h;
+    output_dir << "data/Omega" << Omega0 << "_gamma" << gamma << "_eps" << imp.hamiltonian.eps << "_mu" << imp.hamiltonian.mu << "_ntau" << ntau << "_nt" << nt << "_beta" << beta << "_h" << h;
     std::string tmp = output_dir.str();
     const char * output_dir_str = tmp.c_str();
     struct stat sb;
