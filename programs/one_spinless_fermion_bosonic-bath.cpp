@@ -167,7 +167,7 @@ ppsc::gf_verts_type get_gf_verts(HILB & hil_) {
 // -----------------------------------------------------------------------
 int main(int argc, char *argv[]) {
 
-  int nt, ntau, kt=5, order = 2, nomp=1, itermax = 400, iter;
+  int nt, ntau, kt=5, order, nomp=1, itermax = 400, iter;
   double beta, h, mu, eps, gamma, gammatilde, Omega0, err, errmax = 1e-7;
   
   bool store_pp=true;	// enables storing of pp-gf and pp-selfenergy 
@@ -176,8 +176,10 @@ int main(int argc, char *argv[]) {
     // ---------------------------------------------------------------------
     // READ GENERAL INPUT (NOT YET MICROSCOPIC PARAMETERS)
     
-    if (argc < 2)
-      throw("COMMAND LINE ARGUMENT (INPUT FILE) MISSING");
+    if (argc < 2) {
+      std::cerr << "COMMAND LINE ARGUMENT (INPUT FILE) MISSING. ABORT PROGRAM..." << std::endl;
+      return 1;
+    }
       // scan the input file, double underscores to avoids mismatch
     find_param(argv[1], "__nt=", nt);
     find_param(argv[1], "__ntau=", ntau);
@@ -185,10 +187,19 @@ int main(int argc, char *argv[]) {
     find_param(argv[1], "__h=", h);
     find_param(argv[1], "__Omega0=", Omega0);
     find_param(argv[1], "__gamma=", gamma);
-      
+    find_param(argv[1], "__order=", order); // order = 1 for nca and = 2 for oca
+          
     gammatilde = gamma*std::sqrt(2*Omega0);
-      
-    
+    std::string order_string;
+    if (order > 2){
+      std::cerr << "ORDER MUST BE 1 (NCA) OR 2 (OCA). ABORT PROGRAM..." << std::endl;
+      return 1;
+    }
+    if (order == 2)
+    	order_string = "oca";
+    else 
+    	order_string = "nca";
+    	
     // ---------------------------------------------------------------------
     // -- Setup pp calculator
 
@@ -373,14 +384,13 @@ int main(int argc, char *argv[]) {
     
     // ---------------------------------------------------------------------
     // GREEN'S FUNCTION
-    std::ostringstream gf_outfile;
-    gf_outfile << "/GF_oca.txt";
-    Gloc.print_to_file((output_dir.str() + gf_outfile.str()).c_str());
+    std::string gf_outfile = output_dir.str() + "/GF_" + order_string + ".txt";	
+    Gloc.print_to_file(gf_outfile.c_str());
 
     // ---------------------------------------------------------------------
     // OBSERVABLES
     {
-      std::string filename = output_dir.str() + "/data_ppsc_oca.h5";
+      std::string filename = output_dir.str() + "/data_ppsc_" + order_string + ".h5";
       hid_t file_id = open_hdf5_file(filename);
       hid_t group_id;
 
