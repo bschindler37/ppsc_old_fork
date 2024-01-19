@@ -70,7 +70,7 @@ public:
 
   // ---------------------------------------------------------------------
   one_spinless_fermion(int nt, HILB & hilbert_space) :
-    nt(nt), Q_exp(nt+2),
+    nt(nt), mu(nt+2), Q_exp(nt+2),
     n_exp(nt+2), Eint_exp(nt+2), hil_(hilbert_space) {
 
     // -- Construct basic operators
@@ -85,8 +85,8 @@ public:
 
   // ---------------------------------------------------------------------
   void get_hamiltonian(int tstp, operator_type & Htemp) {
-
-    Htemp = (eps-mu) * n;
+    double mu_t = mu[tstp+1];
+    Htemp = (eps-mu_t) * n;
     
   }
 
@@ -109,7 +109,7 @@ public:
   // ---------------------------------------------------------------------
   void store(hid_t group_id) {
 
-    store_double_attribute_to_hid(group_id, "mu", mu);
+    store_real_data_to_hid(group_id, "mu", mu.data(), mu.size());
     store_double_attribute_to_hid(group_id, "eps", eps);
 
     store_real_data_to_hid(group_id, "Q_exp", Q_exp.data(), Q_exp.size());
@@ -120,7 +120,8 @@ public:
   int nt;
   HILB hil_;
 
-  double mu, eps; 	// need to be initialized manually (!)
+  double eps; 	// need to be initialized manually (!)
+  std::vector<double> mu; // need to be initialized manually (!)
   std::vector<double> Q_exp, n_exp, Eint_exp;
 
   operator_type ca, cc, n, Q;
@@ -168,7 +169,7 @@ ppsc::gf_verts_type get_gf_verts(HILB & hil_) {
 int main(int argc, char *argv[]) {
 
   int nt, ntau, kt=5, order, nomp=1, itermax = 400, iter;
-  double beta, h, mu, eps, gamma, gammatilde, Omega0, err, errmax = 1e-7;
+  double beta, h, eps, gamma, gammatilde, Omega0, err, errmax = 1e-7;
   
   bool store_pp=true;	// enables storing of pp-gf and pp-selfenergy 
 
@@ -214,9 +215,10 @@ int main(int argc, char *argv[]) {
     
     // -- Setup local Hamiltonian
 
-    find_param(argv[1], "__mu=", imp.hamiltonian.mu);
+    find_param(argv[1], "__mu_mats=", imp.hamiltonian.mu[0]);
     find_param(argv[1], "__eps=", imp.hamiltonian.eps);
-
+    for ( int tstp = 0; tstp <= nt ; tstp ++ ) 
+    	imp.hamiltonian.mu[tstp+1] = 0.0;
     imp.update_hamiltonian();
     
     
@@ -224,7 +226,7 @@ int main(int argc, char *argv[]) {
     // -- output directory
     
     std::ostringstream output_dir;	// output directory
-    output_dir << "data/Omega" << Omega0 << "_gamma" << gamma << "_eps" << imp.hamiltonian.eps << "_mu" << imp.hamiltonian.mu << "_ntau" << ntau << "_nt" << nt << "_beta" << beta << "_h" << h;
+    output_dir << "data/Omega" << Omega0 << "_gamma" << gamma << "_eps" << imp.hamiltonian.eps << "_mu-mats" << imp.hamiltonian.mu[0] << "_ntau" << ntau << "_nt" << nt << "_beta" << beta << "_h" << h;
     std::string tmp = output_dir.str();
     const char * output_dir_str = tmp.c_str();
     struct stat sb;
