@@ -168,7 +168,7 @@ ppsc::gf_verts_type get_gf_verts(HILB & hil_) {
 // -----------------------------------------------------------------------
 int main(int argc, char *argv[]) {
 
-  int nt, ntau, kt=5, order, nomp=1, itermax = 400, iter;
+  int nt, ntau, kt=5, order, nomp, itermax = 400, iter;
   double beta, h, eps, gamma, gammatilde, Omega0, err, errmax = 1e-7;
   
   bool store_pp=true;	// enables storing of pp-gf and pp-selfenergy 
@@ -188,6 +188,7 @@ int main(int argc, char *argv[]) {
     find_param(argv[1], "__h=", h);
     find_param(argv[1], "__Omega0=", Omega0);
     find_param(argv[1], "__gamma=", gamma);
+    find_param(argv[1], "__nomp=", nomp);
     find_param(argv[1], "__order=", order); // order = 1 for nca and = 2 for oca
           
     gammatilde = gamma*std::sqrt(2*Omega0);
@@ -386,7 +387,7 @@ int main(int argc, char *argv[]) {
     
     // ---------------------------------------------------------------------
     // GREEN'S FUNCTION
-    std::string gf_outfile = output_dir.str() + "/GF_" + order_string + ".txt";	
+    std::string gf_outfile = output_dir.str() + "/GF_ppsc_" + order_string + ".txt";	
     Gloc.print_to_file(gf_outfile.c_str());
 
     // ---------------------------------------------------------------------
