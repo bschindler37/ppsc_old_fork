@@ -39,6 +39,7 @@ if (hdf5 AND mpi)
     # one_channel_siam_drive.cpp
     one_spinless_fermion.cpp
     one_spinless_fermion_bosonic-bath.cpp
+    one_spinless_fermion_bosonic-bathTEST.cpp
     one_spinful_fermion.cpp
     #xas_two_band_MYFILEOLD.cpp
     xas_two_band_atomic.cpp

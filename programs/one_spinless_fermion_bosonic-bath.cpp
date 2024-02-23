@@ -164,18 +164,24 @@ ppsc::gf_verts_type get_gf_verts(HILB & hil_) {
   gf_verts.push_back(ppsc::gf_vert_type(0, 0, ca, cc));
   return gf_verts;
 }
- 
+
+
+
+
+
 // -----------------------------------------------------------------------
+// -----------------------------------------------------------------------
+
 int main(int argc, char *argv[]) {
 
   int nt, ntau, kt=5, order, nomp, itermax = 400, iter;
-  double beta, h, eps, gamma, gammatilde, Omega0, err, errmax = 1e-7;
+  double beta, h, eps, gamma, gammatilde, Omega0, err=0.0, errmax = 1e-10;
   
   bool store_pp=true;	// enables storing of pp-gf and pp-selfenergy 
 
 
     // ---------------------------------------------------------------------
-    // READ GENERAL INPUT (NOT YET MICROSCOPIC PARAMETERS)
+    // -- read input
     
     if (argc < 2) {
       std::cerr << "COMMAND LINE ARGUMENT (INPUT FILE) MISSING. ABORT PROGRAM..." << std::endl;
@@ -218,7 +224,7 @@ int main(int argc, char *argv[]) {
 
     find_param(argv[1], "__mu_mats=", imp.hamiltonian.mu[0]);
     find_param(argv[1], "__eps=", imp.hamiltonian.eps);
-    for ( int tstp = 0; tstp <= nt ; tstp ++ ) 
+    for ( int tstp = 0; tstp <= nt ; tstp++ ) 
     	imp.hamiltonian.mu[tstp+1] = 0.0;
     imp.update_hamiltonian();
     
@@ -249,8 +255,9 @@ int main(int argc, char *argv[]) {
     // -- Setup Hybridization function, interaction vertices and green's function vertices
 
     for(int tstp = -1; tstp <= nt; tstp++) {	
-      cntr::green_single_pole_XX_timestep(tstp, Delta, Omega0, beta, h);	// free bosonic propagator [-i < X(t) X(t') >] for one timestep
-      Delta.smul(tstp, (gammatilde*gammatilde) / (2.0*Omega0) );
+      cntr::green_single_pole_XX_timestep(tstp, Delta, Omega0, beta, h);	// free bosonic propagator [-i < T_C X(t) X(t') >] for one timestep
+      //Delta.smul(tstp, (gammatilde*gammatilde) / (2.0*Omega0) ); // line below is equivalent to this line
+      Delta.smul(tstp, gamma*gamma );
       ppsc::set_bwd_from_fwd(tstp, Delta_cc, Delta);
     }
       
@@ -270,14 +277,27 @@ int main(int argc, char *argv[]) {
  
     gf_tstps = imp.get_spgf(-1);	// extract local GF without hybridization (because routine 'pp_step' has not been called yet)
     Gloc.set_timestep(-1, gf_tstps[0]); 
-	
+    
+    
+    
     // ---------------------------------------------------------------------
-    // MATSUBARA PART (EQUILIBRIUM INITIAL STATE)
+    /* -- TEST: extract Sigma_ret_bare
+    for(int tstp=-1; tstp<=nt; tstp++ ){ imp.solve_dyson(tstp); }
+    for(int tstp=-1; tstp<=nt; tstp++){ imp.update_sigma(tstp); }
+    std::string filename = output_dir.str() + "/data_ppsc_bare_" + order_string + ".h5";
+    hid_t file_id = open_hdf5_file(filename);
+    imp.store(file_id, store_pp);      
+    close_hdf5_file(file_id);
+    */	
+    
+    
+    // ---------------------------------------------------------------------
+    // -- TIMESTEPPING: Matsubara/equilibrium initial state
     {
       
       cntr::herm_matrix<double> gtmp(-1, ntau, 1, -1);
 
-      for (iter = 1; iter <= itermax; iter++) {
+      for (iter = 0; iter <= itermax; iter++) {
 
 	// -- do pseudo-particle step (also updates expectation values)
 	imp.pp_step(-1);
@@ -311,20 +331,19 @@ int main(int argc, char *argv[]) {
     }
 
     // ---------------------------------------------------------------------
-    // 	START: ONLY FOR NT>0
+    // -- TIMESTEPPING: start (only for nt>0)
     if (nt > 0) {
 
       cntr::herm_matrix<double> gtmp(kt, ntau, 1, -1);
       imp.init_real_time();
       
-      for (iter = 1; iter <= itermax; iter++) {
+      for (iter = 0; iter <= itermax; iter++) {
 
 	imp.pp_step(kt);
 
 	for (int tstp = 0; tstp <= kt; tstp++) {
 	  gf_tstps = imp.get_spgf(tstp);
 	  Gloc.set_timestep(tstp, gf_tstps[0]);	
-
 	}
 	
         err = cntr::distance_norm2(kt, gtmp, Gloc);
@@ -347,14 +366,15 @@ int main(int argc, char *argv[]) {
 
 
     // ---------------------------------------------------------------------
-    // 	REALTIME: ONLY FOR NT>0
+    // -- TIMESTEPPING: real time (only for nt>0)
+    
       for (int tstp = kt + 1; tstp <= nt; tstp++) {
     
         cntr::herm_matrix<double> gtmp(tstp, ntau, 1, -1);
 
         imp.extrapolate_timestep(tstp - 1);
       
-        for (iter = 1; iter <= itermax; iter++) {
+        for (iter = 0; iter <= itermax; iter++) {
 
 	  imp.pp_step(tstp);
 
