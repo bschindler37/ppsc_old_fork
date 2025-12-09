@@ -16,13 +16,16 @@ set(OBJECT_FILES
 
 add_library(nca SHARED ${OBJECT_FILES})
 set_property(TARGET nca APPEND_STRING PROPERTY COMPILE_FLAGS " -w")
-target_link_libraries(nca cntr ppsc ${COMMON_LIBS})
+target_include_directories(nca PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CNTR_INCLUDE_DIR} ${CNTR_HDF5_INCLUDE_DIR} )
 
-if (hdf5)
-#  target_link_libraries(nca cntr_hdf5)
-  target_link_libraries(nca )
-endif (hdf5)
-
+# Propagate usage requirements to dependents
+target_link_libraries(nca 
+  ppsc
+  Eigen3::Eigen
+  ${CNTR_LIBRARY}
+  ${CNTR_HDF5_LIBRARY}
+  OpenMP::OpenMP_CXX
+)
 # ~~ Installation targets ~~
 install(TARGETS nca
         LIBRARY DESTINATION lib)

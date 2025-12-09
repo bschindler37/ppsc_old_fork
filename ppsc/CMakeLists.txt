@@ -19,13 +19,15 @@ set(OBJECT_FILES
 
 add_library(ppsc SHARED ${OBJECT_FILES})
 set_property(TARGET ppsc APPEND_STRING PROPERTY COMPILE_FLAGS " -w")
-target_link_libraries(ppsc cntr)
+target_include_directories(ppsc PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CNTR_INCLUDE_DIR} ${CNTR_HDF5_INCLUDE_DIR} )
 
-if (hdf5)
-   target_link_libraries(ppsc cntr_hdf5)
-   target_link_libraries(ppsc cntr)
-endif (hdf5)
-
+# Propagate usage requirements to dependents
+target_link_libraries(ppsc 
+  Eigen3::Eigen
+  ${CNTR_LIBRARY}
+  ${CNTR_HDF5_LIBRARY}
+  OpenMP::OpenMP_CXX
+)
 # ~~ Installation targets ~~
 install(TARGETS ppsc
         LIBRARY DESTINATION lib)

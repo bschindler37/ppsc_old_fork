@@ -20,13 +20,17 @@ set(OBJECT_FILES
 
 add_library(oca SHARED ${OBJECT_FILES})
 set_property(TARGET oca APPEND_STRING PROPERTY COMPILE_FLAGS " -w")
-target_link_libraries(oca cntr ppsc ${COMMON_LIBS})
 
-if (hdf5)
-#  target_link_libraries(oca cntr_hdf5)
-   target_link_libraries(oca)
-endif (hdf5)
+target_include_directories(oca PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CNTR_INCLUDE_DIR} ${CNTR_HDF5_INCLUDE_DIR} )
 
+# Propagate usage requirements to dependents
+target_link_libraries(oca 
+  ppsc
+  Eigen3::Eigen
+  ${CNTR_LIBRARY}
+  ${CNTR_HDF5_LIBRARY}
+  OpenMP::OpenMP_CXX
+)
 # ~~ Installation targets ~~
 install(TARGETS oca
         LIBRARY DESTINATION lib)

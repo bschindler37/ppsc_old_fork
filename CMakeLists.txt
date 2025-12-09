@@ -57,9 +57,11 @@ find_package(Boost REQUIRED)
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 #list(APPEND COMMON_LIBS ${Boost_LIBRARIES})
 
-# ~~ Add Eigen ~~
-find_package(Eigen3 REQUIRED)
-include_directories(SYSTEM ${EIGEN3_INCLUDE_DIR})
+find_package(Eigen3 REQUIRED NO_MODULE)
+add_definitions("-DCNTR_USE_HDF5")
+find_library(CNTR_LIBRARY NAMES cntr)
+find_library(CNTR_HDF5_LIBRARY NAMES cntr_hdf5)
+find_package(OpenMP REQUIRED)
 
 # ~~ Relocatable code for shared library ~~
 set(GCC_RELOCATABLE_FLAGS "-fPIC")
@@ -75,6 +77,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # ~~ Libraries ~~
 link_directories(${CMAKE_LIBRARY_PATH})
+link_directories($)
 
 # ~~ Paths and Subdirs ~~
 include_directories(${CMAKE_INCLUDE_PATH})

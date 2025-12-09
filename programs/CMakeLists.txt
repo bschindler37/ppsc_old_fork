@@ -26,6 +26,7 @@ if (hdf5 AND mpi)
     single_band_hubbard_bosonbath_bethe.cpp
     two_band_hubbard_bethe.cpp
     two_band_hubbard_bethe_field.cpp
+    single_band_hubbard_bethe_driven.cpp
     #two_band_tJ_bethe_field_afm.cpp
     #two_band_tJ_bethe_field_afm_positive.cpp
     #two_band_tJ_bethe_field_afm_twostates.cpp
@@ -52,7 +53,9 @@ if (hdf5 AND mpi)
 
     STRING(REGEX REPLACE ".cpp" ".ex" executable_file "${source_file}")  
     add_executable(${executable_file} ${source_file})
-    target_link_libraries(${executable_file} cntr nca oca hdf5 ${COMMON_LIBS})
+    target_link_libraries(${executable_file} ppsc nca oca Eigen3::Eigen ${CNTR_LIBRARY} ${CNTR_HDF5_LIBRARY} OpenMP::OpenMP_CXX)
+    target_include_directories(${executable_file} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CNTR_INCLUDE_DIR} ${CNTR_HDF5_INCLUDE_DIR} )
+
     install(TARGETS ${executable_file} DESTINATION bin)
 
   endforeach(source_file)
