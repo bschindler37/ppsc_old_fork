@@ -1,6 +1,7 @@
 # ignore cbuild directories
 cbuild*
 build
+.cache
 
 # other ignores
 *.DS_Store
