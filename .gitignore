@@ -2,6 +2,7 @@
 cbuild*
 build
 .cache
+data
 
 # other ignores
 *.DS_Store

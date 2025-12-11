@@ -59,8 +59,12 @@ include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 
 find_package(Eigen3 REQUIRED NO_MODULE)
 add_definitions("-DCNTR_USE_HDF5")
-find_library(CNTR_LIBRARY NAMES cntr)
-find_library(CNTR_HDF5_LIBRARY NAMES cntr_hdf5)
+find_library(CNTR_LIBRARY REQUIRED NAMES cntr)
+find_library(CNTR_HDF5_LIBRARY REQUIRED NAMES cntr_hdf5)
+set(CNTR_INCLUDE_DIR "/usr/local/include/")
+set(CNTR_HDF5_INCLUDE_DIR "/usral/include/cntr/hdf5")
+message("CNTR_LIB ${CNTR_LIBRARY} INCLUDE ${CNTR_INCLUDE_DIR}")
+message("CNTR_H5_LIB ${CNTR_HDF5_LIBRARY} INCLUDE ${CNTR_HDF5_INCLUDE_DIR}")
 find_package(OpenMP REQUIRED)
 
 # ~~ Relocatable code for shared library ~~

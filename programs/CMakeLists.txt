@@ -11,6 +11,7 @@ if (hdf5 AND mpi)
 
   set( program_sources
     #single_band_hubbard_holstein_MYFILEOLD.cpp
+    impurity_one_non-int_bathsite.cpp
     test_boson_hilbert.cpp
     test_dense_hilbert.cpp
     test_tJ_hilbert.cpp
